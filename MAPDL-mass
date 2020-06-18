@@ -34,11 +34,11 @@ finish
 /filname, mass
 
 *do,j,1,nCMs
-  fini
-  /prep7
+	fini
+  	/prep7
     
-  ! get cs_mass location and angles
-	*GET,cs_x,CDSY,%css(1,j)%,LOC,X
+  	! get cs_mass location and angles
+  	*GET,cs_x,CDSY,%css(1,j)%,LOC,X
 	*GET,cs_y,CDSY,%css(1,j)%,LOC,Y
 	*GET,cs_z,CDSY,%css(1,j)%,LOC,Z
 	*GET,cs_xy,CDSY,%css(1,j)%,ANG,XY
@@ -55,7 +55,7 @@ finish
 	psolve,elform 
 	psolve,elprep 
 
-  ! get inertia about CG & mass
+  	! get inertia about CG & mass
 	*get, mass_x, ELEM,0,MTOT,X
 	*get, mass_y, ELEM,0,MTOT,Y
 	*get, mass_z, ELEM,0,MTOT,Z
@@ -71,72 +71,72 @@ finish
 	*get, moim_yz, ELEM,0,IMC,YZ
 	*get, moim_zx, ELEM,0,IMC,ZX
 
-   ! translate inertia components to cs_mass loc
-   xg = cg_x - cs_x
-   yg = cg_y - cs_y
-   zg = cg_z - cs_z
+   	! translate inertia components to cs_mass loc
+   	xg = cg_x - cs_x
+   	yg = cg_y - cs_y
+   	zg = cg_z - cs_z
 
-  Ixx_cst = moim_x+mass_x*(yg**2+zg**2)
-  Iyy_cst = moim_y+mass_y*(xg**2+zg**2)
-  Izz_cst = moim_z+mass_z*(xg**2+yg**2)
-  Ixy_cst = moim_xy+mass_x*xg*yg
-  Iyz_cst = moim_yz+mass_y*yg*zg
-  Izx_cst = moim_zx+mass_z*zg*xg
+  	Ixx_cst = moim_x+mass_x*(yg**2+zg**2)
+  	Iyy_cst = moim_y+mass_y*(xg**2+zg**2)
+  	Izz_cst = moim_z+mass_z*(xg**2+yg**2)
+  	Ixy_cst = moim_xy+mass_x*xg*yg
+  	Iyz_cst = moim_yz+mass_y*yg*zg
+  	Izx_cst = moim_zx+mass_z*zg*xg
     
-  ! create APDL 2D array
-  *dim,I_cst, array,3,3
-  I_cst(1,1)=Ixx_cst
-  I_cst(1,2)=Ixy_cst
-  I_cst(1,3)=Izx_cst
-  I_cst(2,1)=Ixy_cst
-  I_cst(2,2)=Iyy_cst
-  I_cst(2,3)=Iyz_cst
-  I_cst(3,1)=Izx_cst
-  I_cst(3,2)=Iyz_cst
-  I_cst(3,3)=Izz_cst
+  	! create APDL 2D array
+  	*dim,I_cst, array,3,3
+  	I_cst(1,1)=Ixx_cst
+  	I_cst(1,2)=Ixy_cst
+  	I_cst(1,3)=Izx_cst
+	I_cst(2,1)=Ixy_cst
+ 	I_cst(2,2)=Iyy_cst
+  	I_cst(2,3)=Iyz_cst
+  	I_cst(3,1)=Izx_cst
+  	I_cst(3,2)=Iyz_cst
+  	I_cst(3,3)=Izz_cst
     
-  ! rotate inertia componets to cs_mass angles
-  ! https://www.simutechgroup.com/tips-and-tricks/fea-articles/286-fea-tips-tricks-ansys-rotation-convention
+  	! rotate inertia componets to cs_mass angles
+  	! https://www.simutechgroup.com/tips-and-tricks/fea-articles/286-fea-tips-tricks-ansys-rotation-convention
 
-  ! make transformation matrix T
-  PI=ACOS(-1)
-  c1=COS(cs_xy*PI/180.)
-  c2=COS(cs_yz*PI/180.)
-  c3=COS(cs_zx*PI/180.)
-  s1=SIN(cs_xy*PI/180.)
-  s2=SIN(cs_yz*PI/180.)
-  s3=SIN(cs_zx*PI/180.)
+  	! make transformation matrix T
+  	PI=ACOS(-1)
+  	c1=COS(cs_xy*PI/180.)
+  	c2=COS(cs_yz*PI/180.)
+  	c3=COS(cs_zx*PI/180.)
+  	s1=SIN(cs_xy*PI/180.)
+  	s2=SIN(cs_yz*PI/180.)
+  	s3=SIN(cs_zx*PI/180.)
     
-  txx = c1*c3-s1*s2*s3
-  txy = s1*c3+c1*s2*s3
-  txz = -s3*c2
-  tyx = -s1*c2
-  tyy = c1*c2
-  tyz = s2
-  tzx = c1*s3+s1*s2*c3
-  tzy = s1*s3-c1*c3*s2
-  tzz = c2*c3
+  	txx = c1*c3-s1*s2*s3
+  	txy = s1*c3+c1*s2*s3
+  	txz = -s3*c2
+  	tyx = -s1*c2
+  	tyy = c1*c2
+  	tyz = s2
+  	tzx = c1*s3+s1*s2*c3
+  	tzy = s1*s3-c1*c3*s2
+  	tzz = c2*c3
     
-  ! create APDL 2D array
-  *dim,Tr, array,3,3
-  Tr(1,1)=txx
-  Tr(1,2)=txy
-  Tr(1,3)=txz
-  Tr(2,1)=tyx
-  Tr(2,2)=tyy
-  Tr(2,3)=tyz
-  Tr(3,1)=tzx
-  Tr(3,2)=tzy
-  Tr(3,3)=tzz
+  	! create APDL 2D array
+  	*dim,Tr, array,3,3
+  	Tr(1,1)=txx
+  	Tr(1,2)=txy
+  	Tr(1,3)=txz
+ 	Tr(2,1)=tyx
+  	Tr(2,2)=tyy
+	Tr(2,3)=tyz
+	Tr(3,1)=tzx
+	Tr(3,2)=tzy
+	Tr(3,3)=tzz
     
-  ! copy matrices from APDL to APDL Math
-  *DMAT, I_cstm, D, IMPORT, APDL, I_cst
-  *DMAT, Trm, D, IMPORT, APDL, Tr
-  ! multiply matrices using APDL math
-  *MULT,Trm,,I_cstm,, M3
-  *MULT,M3,,Trm,TRANS,I_csm
-  ! copy result back to APDL
-  *EXPORT,I_csm,APDL,I_cs,1,1
+  	! copy matrices from APDL to APDL Math
+  	*DMAT, I_cstm, D, IMPORT, APDL, I_cst
+  	*DMAT, Trm, D, IMPORT, APDL, Tr
+  	! multiply matrices using APDL math
+  	*MULT,Trm,,I_cstm,, M3
+  	*MULT,M3,,Trm,TRANS,I_csm
+  	! copy result back to APDL
+  	*EXPORT,I_csm,APDL,I_cs,1,1
 
 	outVars(j,1) = mass_x
 	outVars(j,2) = mass_y
