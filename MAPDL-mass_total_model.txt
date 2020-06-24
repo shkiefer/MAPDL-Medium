@@ -11,12 +11,12 @@ fini
 /prep7
     
 ! get cs location and angles
-*GET,cs_x,CDSY,%css(1,j)%,LOC,X
-*GET,cs_y,CDSY,%css(1,j)%,LOC,Y
-*GET,cs_z,CDSY,%css(1,j)%,LOC,Z
-*GET,cs_xy,CDSY,%css(1,j)%,ANG,XY
-*GET,cs_yz,CDSY,%css(1,j)%,ANG,YZ
-*GET,cs_zx,CDSY,%css(1,j)%,ANG,ZX
+*GET,cs_x,CDSY,%cs_mass%,LOC,X
+*GET,cs_y,CDSY,%cs_mass%,LOC,Y
+*GET,cs_z,CDSY,%cs_mass%,LOC,Z
+*GET,cs_xy,CDSY,%cs_mass%,ANG,XY
+*GET,cs_yz,CDSY,%cs_mass%,ANG,YZ
+*GET,cs_zx,CDSY,%cs_mass%,ANG,ZX
 	
 fini
 /sol
