@@ -14,11 +14,11 @@ nCMs = 2
 f_name = 'my_mass'
 *DIM, cms, STRING, 100, nCMs
 cms(1,1) = 'my_comp_1'
-cms(1,2) = 'my_comp_1'
+cms(1,2) = 'my_comp_2'
 
 *DIM, css, STRING, 100, nCMs
-css(1,1) = 'cs_hinge_1'
-css(1,2) = 'cs_hinge_3'
+css(1,1) = 'my_cs_1'
+css(1,2) = 'my_cs_2'
 
 ALLSEL
 cm,total,elem
@@ -37,7 +37,7 @@ finish
 	fini
   	/prep7
     
-  	! get cs_mass location and angles
+  	! get cs location and angles
   	*GET,cs_x,CDSY,%css(1,j)%,LOC,X
 	*GET,cs_y,CDSY,%css(1,j)%,LOC,Y
 	*GET,cs_z,CDSY,%css(1,j)%,LOC,Z
