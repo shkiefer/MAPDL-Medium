@@ -23,7 +23,7 @@ css(1,2) = 'my_cs_2'
 ALLSEL
 cm,total,elem
 
-*cfopen, %_wb_userfiles_dir(1)%%f_name%_date%date%_dp%dp_num%, txt
+*cfopen, %_wb_userfiles_dir(1)%%f_name%, txt
 
 *vwrite,'Component','CS_ID','mass_X','mass_Y','mass_Z','Ics_xx','Ics_yy','Ics_zz','Ics_xy','Ics_xz','Ics_yx','Ics_yz','Ics_zx','Ics_zy'
 %12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C
