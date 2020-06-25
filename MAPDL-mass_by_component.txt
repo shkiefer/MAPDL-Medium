@@ -25,10 +25,10 @@ cm,total,elem
 
 *cfopen, %_wb_userfiles_dir(1)%%f_name%, txt
 
-*vwrite,'Component','CS_ID','mass_X','mass_Y','mass_Z','Ics_xx','Ics_yy','Ics_zz','Ics_xy','Ics_xz','Ics_yx','Ics_yz','Ics_zx','Ics_zy'
-%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C
+*vwrite,'Component','CS_Name','CS_ID','mass_X','mass_Y','mass_Z','Ics_xx','Ics_yy','Ics_zz','Ics_xy','Ics_xz','Ics_yx','Ics_yz','Ics_zx','Ics_zy'
+%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C,%12C
 
-*dim,outVars,array,nCMs,12
+*dim,outVars,array,nCMs,13
 
 finish
 /filname, mass
@@ -38,6 +38,7 @@ finish
   	/prep7
     
   	! get cs location and angles
+	outVars(j,1)=%css(1,j)%
   	*GET,cs_x,CDSY,%css(1,j)%,LOC,X
 	*GET,cs_y,CDSY,%css(1,j)%,LOC,Y
 	*GET,cs_z,CDSY,%css(1,j)%,LOC,Z
@@ -138,24 +139,24 @@ finish
   	! copy result back to APDL
   	*EXPORT,I_csm,APDL,I_cs,1,1
 
-	outVars(j,1) = mass_x
-	outVars(j,2) = mass_y
-	outVars(j,3) = mass_z
-	outVars(j,4) = I_csm(1,1)
-	outVars(j,5) = I_csm(2,2)
-	outVars(j,6) = I_csm(3,3)
-	outVars(j,7) = I_csm(1,2)
-	outVars(j,8) = I_csm(1,3)
-	outVars(j,9) = I_csm(2,1)
-	outVars(j,10) = I_csm(2,3)
-	outVars(j,11) = I_csm(3,1)
-	outVars(j,12) = I_csm(3,2)
+	outVars(j,2) = mass_x
+	outVars(j,3) = mass_y
+	outVars(j,4) = mass_z
+	outVars(j,5) = I_csm(1,1)
+	outVars(j,6) = I_csm(2,2)
+	outVars(j,7) = I_csm(3,3)
+	outVars(j,8) = I_csm(1,2)
+	outVars(j,9) = I_csm(1,3)
+	outVars(j,10) = I_csm(2,1)
+	outVars(j,11) = I_csm(2,3)
+	outVars(j,12) = I_csm(3,1)
+	outVars(j,13) = I_csm(3,2)
 
 *enddo
 
 
-*vwrite,cms(1,1),css(1,1),outVars(1,1),outVars(1,2),outVars(1,3),outVars(1,4),outVars(1,5),outVars(1,6),outVars(1,7),outVars(1,8),outVars(1,9),outVars(1,10),outVars(1,11),outVars(1,12)
-%12c,%12.0f,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e
+*vwrite,cms(1,1),css(1,1),outVars(1,1),outVars(1,2),outVars(1,3),outVars(1,4),outVars(1,5),outVars(1,6),outVars(1,7),outVars(1,8),outVars(1,9),outVars(1,10),outVars(1,11),outVars(1,12),outVars(1,13)
+%12c,%12c,%12.0f,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e,%12.3e
 *cfclos
 
 finish
