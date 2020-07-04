@@ -1,0 +1,145 @@
+finish
+/post26
+
+f_name = 'my_filename'
+j_id_array='my_joint_eID_array'
+
+*get, nJoints, PARM, %j_id_array%, DIM, 1
+*get, date, ACTIVE, 0, DBASE, LDATE
+*get, time, ACTIVE, 0, DBASE, LTIME
+*get, units, ACTIVE,0, UNITS
+
+
+/NOPR
+/output,%_wb_userfiles_dir(1)%%f_name%_date%date%, txt,,,
+*vwrite,_WB_SOLVERFILES_DIR(1,1,1)
+%C
+*vwrite,'Date', 'Time'
+%C, %C
+*vwrite, date, time
+%i, %i
+*vwrite, 'Units',units
+%C, %i 
+
+!header
+*vwrite,'j_id','j_eid','x','y','z','LC/f'
+(6(A10',')\b)
+*vwrite,'Fx_rl','Fx_im','Fy_rl','Fy_im','Fz_rl','Fz_im','Mx_rl','Mx_im','My_rl','My_im','Mz_rl','Mz_im'
+(11(A10',')A10)
+/output
+/GOPR
+
+numvar,60
+*get,nSets,ACTIVE,0,SET,NSET
+
+*do,i,1,nJoints
+	*dim,outVars,array,nSets,18
+    eID=0
+    ni=0
+    nj=0
+
+    eID=%j_id_array%(i)
+
+    *get,ni,ELEM,eID,NODE,1
+    *get,nj,ELEM,eID,NODE,2
+    jx=(NX(ni)+NX(nj))/2
+    jy=(NY(ni)+NY(nj))/2
+    jz=(NZ(ni)+NZ(nj))/2
+
+    allsel
+	! get everything into outvars for *mwrite
+	*vfill,outVars(1,1),RAMP,i,0.0
+	*vfill,outVars(1,2),RAMP,eID,0.0
+    *vfill,outVars(1,3),RAMP,jx,0.0
+    *vfill,outVars(1,4),RAMP,jy,0.0
+    *vfill,outVars(1,5),RAMP,jz,0.0
+
+	!Constraint Forces, imaginary (rdofs)
+	esol,2,eID,,SMISC,1
+	esol,3,eID,,SMISC,2
+	esol,4,eID,,SMISC,3
+	esol,5,eID,,SMISC,4
+	esol,6,eID,,SMISC,5
+	esol,7,eID,,SMISC,6
+
+	!Elastic forces, imaginary (stiffness forces)
+	esol,8,eID,,SMISC,43
+	esol,9,eID,,SMISC,44
+	esol,10,eID,,SMISC,45
+	esol,11,eID,,SMISC,46
+	esol,12,eID,,SMISC,47	
+	esol,13,eID,,SMISC,48
+
+	!Damping forces, imaginary
+	esol,14,eID,,SMISC,49
+	esol,15,eID,,SMISC,50
+	esol,16,eID,,SMISC,51
+	esol,17,eID,,SMISC,52
+	esol,18,eID,,SMISC,53	
+	esol,19,eID,,SMISC,54
+
+	!Joint Stop forces, imaginary
+	esol,20,eID,,SMISC,7
+	esol,21,eID,,SMISC,8
+	esol,22,eID,,SMISC,9
+	esol,23,eID,,SMISC,10
+	esol,24,eID,,SMISC,11	
+	esol,25,eID,,SMISC,12
+	store
+    
+	!Sum of all forces, imaginary
+	add,32, 2, 8, 14
+	add,33, 3, 9, 15
+	add,34, 4, 10, 16
+	add,35, 5, 11, 17
+	add,36, 6, 12, 18
+	add,37, 7, 13, 19
+	add,40, 32, 20
+	add,41, 33, 21
+	add,42, 34, 22
+	add,43, 35, 23
+	add,44, 36, 24
+	add,45, 37, 25
+
+    ! time / LC / Freq
+	vget,outVars(1,6),1
+
+    *if, eID, gt,0., then
+	    vget,outVars(1,7),40,,0
+	    vget,outVars(1,8),40,,1
+    	vget,outVars(1,9),41,,0
+    	vget,outVars(1,10),41,,1
+    	vget,outVars(1,11),42,,0
+    	vget,outVars(1,12),42,,1
+    	vget,outVars(1,13),43,,0
+    	vget,outVars(1,14),43,,1
+    	vget,outVars(1,15),44,,0
+    	vget,outVars(1,16),44,,1
+    	vget,outVars(1,17),45,,0
+    	vget,outVars(1,18),45,,1
+	    
+	*else
+	    *vfill,outVars(1,7),RAMP,0.0,0.0
+	    *vfill,outVars(1,8),RAMP,0.0,0.0
+	    *vfill,outVars(1,9),RAMP,0.0,0.0
+	    *vfill,outVars(1,10),RAMP,0.0,0.0
+	    *vfill,outVars(1,11),RAMP,0.0,0.0
+	    *vfill,outVars(1,12),RAMP,0.0,0.0
+	    *vfill,outVars(1,13),RAMP,0.0,0.0
+	    *vfill,outVars(1,14),RAMP,0.0,0.0
+	    *vfill,outVars(1,15),RAMP,0.0,0.0
+	    *vfill,outVars(1,16),RAMP,0.0,0.0
+	    *vfill,outVars(1,17),RAMP,0.0,0.0
+	    *vfill,outVars(1,18),RAMP,0.0,0.0
+	*endif
+
+	/NOPR
+	/output,%_wb_userfiles_dir(1)%%f_name%_date%date%, txt,,APPEND,
+    *mwrite,outVars,,,,jik,
+(2(f10.0',')15(e10.3',')e10.3)
+    /output
+    /GOPR
+*enddo
+
+allsel
+finish
