@@ -1,0 +1,246 @@
+finish
+/post26
+
+f_name = 'my_filename'
+j_id_array='my_joint_eID_array'
+
+*get, nJoints, PARM, %j_id_array%, DIM, 1
+*get, date, ACTIVE, 0, DBASE, LDATE
+*get, time, ACTIVE, 0, DBASE, LTIME
+*get, units, ACTIVE,0, UNITS
+
+!*cfopen, %_wb_userfiles_dir(1)%%f_name%_date%date%_dp%dp_num%, txt
+/NOPR
+/output,%_wb_userfiles_dir(1)%%f_name%_date%date%, txt,,,
+*vwrite,_WB_SOLVERFILES_DIR(1,1,1)
+%C
+*vwrite,'Date', 'Time'
+%C, %C
+*vwrite, date, time
+%i, %i
+*vwrite, 'Units',units
+%C, %i 
+
+!header
+*vwrite,'j_id','j_eid','x','y','z','LC/f'
+(6(A10',')\b)
+*vwrite,'Fx_rl','Fx_im','Fy_rl','Fy_im','Fz_rl','Fz_im','Mx_rl','Mx_im','My_rl','My_im','Mz_rl','Mz_im'
+(11(A10',')A10)
+/output
+/GOPR
+
+numvar,60
+*get,nSets,ACTIVE,0,SET,NSET
+
+*do,i,1,nJoints
+
+	*dim,outVars,array,nSets,18
+    eID=0
+    ni=0
+    nj=0
+
+    eID=%j_id_array%(i)
+
+    *get,ni,ELEM,eID,NODE,1
+    *get,nj,ELEM,eID,NODE,2
+    jx=(NX(ni)+NX(nj))/2
+    jy=(NY(ni)+NY(nj))/2
+    jz=(NZ(ni)+NZ(nj))/2
+
+    allsel
+	! get everything into outvars for *mwrite
+	*vfill,outVars(1,1),RAMP,i,0.0
+	*vfill,outVars(1,2),RAMP,eID,0.0
+    *vfill,outVars(1,3),RAMP,jx,0.0
+    *vfill,outVars(1,4),RAMP,jy,0.0
+    *vfill,outVars(1,5),RAMP,jz,0.0
+
+	!Static Forces, imaginary - node i
+	esol,2,eID,,SMISC,1
+	esol,3,eID,,SMISC,2
+	esol,4,eID,,SMISC,3
+	esol,5,eID,,SMISC,4
+	esol,6,eID,,SMISC,5
+	esol,7,eID,,SMISC,6
+
+	!Static Forces, imaginary - node j
+	esol,8,eID,,SMISC,7
+	esol,9,eID,,SMISC,8
+	esol,10,eID,,SMISC,9
+	esol,11,eID,,SMISC,10
+	esol,12,eID,,SMISC,11
+	esol,13,eID,,SMISC,12
+
+	!Damping forces, imaginary - node i
+	esol,14,eID,,SMISC,13
+	esol,15,eID,,SMISC,14
+	esol,16,eID,,SMISC,15
+	esol,17,eID,,SMISC,16
+	esol,18,eID,,SMISC,17	
+	esol,19,eID,,SMISC,18
+
+	!Damping forces, imaginary - node j
+	esol,20,eID,,SMISC,19
+	esol,21,eID,,SMISC,20
+	esol,22,eID,,SMISC,21
+	esol,23,eID,,SMISC,22
+	esol,24,eID,,SMISC,23	
+	esol,25,eID,,SMISC,24
+    store
+    
+    ! add variables to array parameters
+    ! static forces
+    *dim, fx_irs, array,nSets
+    *dim, fx_iis, array,nSets
+    *dim, fx_jrs, array,nSets
+    *dim, fx_jis, array,nSets
+    
+    *dim, fy_irs, array,nSets
+    *dim, fy_iis, array,nSets
+    *dim, fy_jrs, array,nSets
+    *dim, fy_jis, array,nSets
+    
+    *dim, fz_irs, array,nSets
+    *dim, fz_iis, array,nSets
+    *dim, fz_jrs, array,nSets
+    *dim, fz_jis, array,nSets
+    
+    *dim, mx_irs, array,nSets
+    *dim, mx_iis, array,nSets
+    *dim, mx_jrs, array,nSets
+    *dim, mx_jis, array,nSets
+    
+    *dim, my_irs, array,nSets
+    *dim, my_iis, array,nSets
+    *dim, my_jrs, array,nSets
+    *dim, my_jis, array,nSets
+    
+    *dim, mz_irs, array,nSets
+    *dim, mz_iis, array,nSets
+    *dim, mz_jrs, array,nSets
+    *dim, mz_jis, array,nSets
+    
+    vget,fx_irs, 2,0, 0
+    vget,fx_iis, 2,0, 1
+    vget,fy_irs, 3,0, 0
+    vget,fy_iis, 3,0, 1
+    vget,fz_irs, 4,0, 0
+    vget,fz_iis, 4,0, 1
+    vget,mx_irs, 5,0, 0
+    vget,mx_iis, 5,0, 1    
+    vget,my_irs, 6,0, 0
+    vget,my_iis, 6,0, 1    
+    vget,mz_irs, 7,0, 0
+    vget,mz_iis, 7,0, 1
+
+    vget,fx_jrs, 8,0, 0
+    vget,fx_jis, 8,0, 1
+    vget,fy_jrs, 9,0, 0
+    vget,fy_jis, 9,0, 1
+    vget,fz_jrs, 10,0, 0
+    vget,fz_jis, 10,0, 1
+    vget,mx_jrs, 11,0, 0
+    vget,mx_jis, 11,0, 1    
+    vget,my_jrs, 12,0, 0
+    vget,my_jis, 12,0, 1    
+    vget,mz_jrs, 13,0, 0
+    vget,mz_jis, 13,0, 1
+
+    ! damping forces
+    *dim, fx_ird, array,nSets
+    *dim, fx_iid, array,nSets
+    *dim, fx_jrd, array,nSets
+    *dim, fx_jid, array,nSets
+    
+    *dim, fy_ird, array,nSets
+    *dim, fy_iid, array,nSets
+    *dim, fy_jrd, array,nSets
+    *dim, fy_jid, array,nSets
+    
+    *dim, fz_ird, array,nSets
+    *dim, fz_iid, array,nSets
+    *dim, fz_jrd, array,nSets
+    *dim, fz_jid, array,nSets
+    
+    *dim, mx_ird, array,nSets
+    *dim, mx_iid, array,nSets
+    *dim, mx_jrd, array,nSets
+    *dim, mx_jid, array,nSets
+    
+    *dim, my_ird, array,nSets
+    *dim, my_iid, array,nSets
+    *dim, my_jrd, array,nSets
+    *dim, my_jid, array,nSets
+    
+    *dim, mz_ird, array,nSets
+    *dim, mz_iid, array,nSets
+    *dim, mz_jrd, array,nSets
+    *dim, mz_jid, array,nSets
+    
+    vget,fx_ird, 14,0, 0
+    vget,fx_iid, 14,0, 1
+    vget,fy_ird, 15,0, 0
+    vget,fy_iid, 15,0, 1
+    vget,fz_ird, 16,0, 0
+    vget,fz_iid, 16,0, 1
+    vget,mx_ird, 17,0, 0
+    vget,mx_iid, 17,0, 1    
+    vget,my_ird, 18,0, 0
+    vget,my_iid, 18,0, 1    
+    vget,mz_ird, 19,0, 0
+    vget,mz_iid, 19,0, 1
+
+    vget,fx_jrd, 20,0, 0
+    vget,fx_jid, 20,0, 1
+    vget,fy_jrd, 21,0, 0
+    vget,fy_jid, 21,0, 1
+    vget,fz_jrd, 22,0, 0
+    vget,fz_jid, 22,0, 1
+    vget,mx_jrd, 23,0, 0
+    vget,mx_jid, 23,0, 1    
+    vget,my_jrd, 24,0, 0
+    vget,my_jid, 24,0, 1    
+    vget,mz_jrd, 25,0, 0
+    vget,mz_jid, 25,0, 1
+
+    !Average Static + Damping (node i)
+    ! Fxr
+    *voper,outVars(1,7),fx_irs,ADD,fx_ird
+    ! Fxi
+    *voper,outVars(1,8),fx_iis,ADD,fx_iid
+    ! Fyr
+    *voper,outVars(1,9),fy_irs,ADD,fy_ird
+    ! Fyi
+    *voper,outVars(1,10),fy_iis,ADD,fy_iid
+    ! Fzr
+    *voper,outVars(1,11),fz_irs,ADD,fz_ird
+    ! Fzi
+    *voper,outVars(1,12),fz_iis,ADD,fz_iid
+    ! Mxr
+    *voper,outVars(1,13),mx_irs,ADD,mx_ird
+    ! Mxi
+    *voper,outVars(1,14),mx_iis,ADD,mx_iid
+    ! Myr
+    *voper,outVars(1,15),my_irs,ADD,my_ird
+    ! Myi
+    *voper,outVars(1,16),my_iis,ADD,my_iid
+    ! Mzr
+    *voper,outVars(1,17),mz_irs,ADD,mz_ird
+    ! Mzi
+    *voper,outVars(1,18),mz_iis,ADD,mz_iid
+
+    ! time / LC / Freq
+	vget,outVars(1,6),1
+
+	/NOPR
+	/output,%_wb_userfiles_dir(1)%%f_name%_date%date%, txt,,APPEND,
+    *mwrite,outVars,,,,jik,
+(2(f10.0',')15(e10.3',')e10.3)
+    /output
+    /GOPR
+
+*enddo
+
+!*cfclos
+allsel
+finish
