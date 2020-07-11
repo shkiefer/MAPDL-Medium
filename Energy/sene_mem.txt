@@ -225,7 +225,7 @@ hdr(1)=STRFILL(hdr(1),col_str(1),ls+1)
 /NOPR
 /output,%_wb_userfiles_dir(1)%%f_name%_date%date%, txt,,APPEND,
 *mwrite,outVars,,,,jik,
-((e10.3',')6(f10.5',')9(e14.3',')e10.3)
+((e10.3',')6(f10.5',')3(e14.3',')e10.3)
 !_____________________^ update this int to nCMs
 /output
 /GOPR
