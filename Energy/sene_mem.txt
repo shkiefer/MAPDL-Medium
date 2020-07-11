@@ -1,1 +1,237 @@
+! create joint element components as-necessary
 
+!update *mwrite format command at eof!
+nCMs = 3
+f_name = 'ansys_sene_mem'
+*DIM, cms, STRING, 100, nCMs
+cms(1,1) = 'my_component_1'
+cms(1,2) = 'my_component_2'
+cms(1,3) = 'my_component_3'
+
+
+! start automation
+*get, date, ACTIVE, 0, DBASE, LDATE
+*get, time, ACTIVE, 0, DBASE, LTIME
+*get, units, ACTIVE,0, UNITS
+
+! combine header row
+*dim,hdr,string,248,1
+ls=0
+lf=14
+*if,nCMs,gt,1,THEN
+	*do,j,1,nCMs
+		lc = STRLENG(cms(1,j))
+		*dim,col_str,string,lf,1
+		pos=max(lf-lc, 0)
+		col_str(1)=STRFILL(col_str(1),cms(1,j),pos+1)
+		hdr(1)=STRFILL(hdr(1),col_str(1),ls+1)
+		hdr(1)=STRFILL(hdr(1),',', ls+lf+1)
+		!ls = ls + lc + 2
+		ls=ls+lf+1
+	*enddo
+*endif
+
+lf=10
+lc = STRLENG('All_Comps')
+*dim,col_str,string,lf,1
+pos=max(lf-lc, 0)
+col_str(1)=STRFILL(col_str(1),'All_Comps',pos+1)
+hdr(1)=STRFILL(hdr(1),col_str(1),ls+1)
+
+/NOPR
+/output,%_wb_userfiles_dir(1)%%f_name%_date%date%, txt,,,
+*vwrite,_WB_SOLVERFILES_DIR(1,1,1)
+%C
+*vwrite,'Date', 'Time'
+%C, %C
+*vwrite, date, time
+%i, %i
+*vwrite, 'Units',units
+%C, %i 
+
+!header
+*vwrite,'f', 'memp_tx', 'memp_ty', 'memp_tz', 'memp_rx', 'memp_ry', 'memp_rz'
+(7(A10',')\b)
+
+*vwrite, hdr(1)
+%C
+
+/output
+/GOPR
+
+
+*get, nSets, ACTIVE,0,SET,NSET
+
+*dim,outVars,array,nSets,7+nCMs+1
+*do,i,1,nSets
+	set,,,,,,,i
+
+	*get,freq, ACTIVE, 0, SET, FREQ
+	!*get,freq,MODE,i,,,,,
+	*get,effm_tx,MODE,i,EFFM,,DIREC,X
+	*get,effm_ty,MODE,i,EFFM,,DIREC,Y
+	*get,effm_tz,MODE,i,EFFM,,DIREC,Z
+	*get,effm_rx,MODE,i,EFFM,,DIREC,ROTX
+	*get,effm_ry,MODE,i,EFFM,,DIREC,ROTY
+	*get,effm_rz,MODE,i,EFFM,,DIREC,ROTZ
+
+	*get, mass_x, ELEM,0,MTOT,X
+	*get, mass_y, ELEM,0,MTOT,Y
+	*get, mass_z, ELEM,0,MTOT,Z
+	*get, moio_x, ELEM,0,IOR,X
+	*get, moio_y, ELEM,0,IOR,Y
+	*get, moio_z, ELEM,0,IOR,Z
+
+ 	effm_tx_p = effm_tx/mass_x
+	effm_ty_p = effm_ty/mass_y
+	effm_tz_p = effm_tz/mass_z
+	effm_rx_p = effm_rx/moio_x
+	effm_ry_p = effm_ry/moio_y
+	effm_rz_p = effm_rz/moio_z
+
+    outVars(i,1)=freq
+    outVars(i,2)=effm_tx_p
+    outVars(i,3)=effm_ty_p
+    outVars(i,4)=effm_tz_p
+    outVars(i,5)=effm_rx_p
+    outVars(i,6)=effm_ry_p
+    outVars(i,7)=effm_rz_p
+
+	allsel
+	etab, sene_all, SENE
+	sabs,1
+	ssum
+	*get, SENE_all, SSUM, 0, ITEM, sene_all
+
+	!get eleastic energy from all mpc184 elements
+	esel,s,ename,,184
+	*get, num_els, ELEM, 0, COUNT
+	*get, el_min, ELEM, 0, NUM, MIN
+	
+	el = el_min
+	ene = 0.0
+	*do,k,1,num_els
+		!assumes linear stiffness
+		k1 =0.0
+		k2 =0.0
+		k3 =0.0
+		k4 =0.0
+		k5 =0.0
+		k6 =0.0
+		!only procede if stiffness is associated with this material type
+		!get stiffness 
+		*get, mat_ID, ELEM, el, ATTR, MAT
+		*get, k1, JOIN, mat_ID, TEMP, 0.0, CONST,  1, STIF
+		*get, k2, JOIN, mat_ID, TEMP, 0.0, CONST,  7, STIF
+		*get, k3, JOIN, mat_ID, TEMP, 0.0, CONST, 12, STIF
+		*get, k4, JOIN, mat_ID, TEMP, 0.0, CONST, 16, STIF
+		*get, k5, JOIN, mat_ID, TEMP, 0.0, CONST, 19, STIF
+		*get, k6, JOIN, mat_ID, TEMP, 0.0, CONST, 21, STIF		
+
+		u1 = 0.0
+		u2 = 0.0
+		u3 = 0.0
+		u4 = 0.0
+		u5 = 0.0
+		u6 = 0.0
+		*get, u1, ELEM, el, SMISC, 61
+		*get, u2, ELEM, el, SMISC, 62
+		*get, u3, ELEM, el, SMISC, 63
+		*get, u4, ELEM, el, SMISC, 64
+		*get, u5, ELEM, el, SMISC, 65
+		*get, u6, ELEM, el, SMISC, 66
+
+		!assumes linear stiffness
+		f1 = k1*u1
+		f2 = k2*u2
+		f3 = k3*u3
+		f4 = k4*u4
+		f5 = k5*u5
+		f6 = k6*u6			
+		ene = ene + abs(0.5*(f1*u1))
+		ene = ene + abs(0.5*(f2*u2))
+		ene = ene + abs(0.5*(f3*u3))
+		ene = ene + abs(0.5*(f4*u4))
+		ene = ene + abs(0.5*(f5*u5))
+		ene = ene + abs(0.5*(f6*u6))
+		
+		el = ELNEXT(el)
+	*enddo
+
+	!combine total elastic energy from continuum elements and mpc184
+	SENE_all = SENE_all+ene
+	allsel	
+
+	!get elastic energy from components
+	sene_comps = 0.0
+	*do,j,1,nCMs
+		cmsel, s, %cms(1,j)%
+		!get eleastic energy from continuum elems
+		etab, cm_send, SENE
+		sabs,1
+		ssum
+		*get, sene_cont, SSUM, 0, ITEM, cm_send
+
+		!get elastic energy from mpc184 elems
+		esel,r,ename,,184
+		*get, num_els, ELEM, 0, COUNT
+		*get, el_min, ELEM, 0, NUM, MIN
+	
+		el = el_min
+		ene = 0.0
+		*do,k,1,num_els
+			!assumes linear stiffness
+			!get stiffness 
+			*get, mat_ID, ELEM, el, ATTR, MAT
+			*get, k1, JOIN, mat_ID, TEMP, 0.0, CONST,  1, STIF
+			*get, k2, JOIN, mat_ID, TEMP, 0.0, CONST,  7, STIF
+			*get, k3, JOIN, mat_ID, TEMP, 0.0, CONST, 12, STIF
+			*get, k4, JOIN, mat_ID, TEMP, 0.0, CONST, 16, STIF
+			*get, k5, JOIN, mat_ID, TEMP, 0.0, CONST, 19, STIF
+			*get, k6, JOIN, mat_ID, TEMP, 0.0, CONST, 21, STIF		
+
+			*get, u1, ELEM, el, SMISC, 61
+			*get, u2, ELEM, el, SMISC, 62
+			*get, u3, ELEM, el, SMISC, 63
+			*get, u4, ELEM, el, SMISC, 64
+			*get, u5, ELEM, el, SMISC, 65
+			*get, u6, ELEM, el, SMISC, 66
+
+			!assumes linear stiffness
+			f1 = k1*u1
+			f2 = k2*u2
+			f3 = k3*u3
+			f4 = k4*u4
+			f5 = k5*u5
+			f6 = k6*u6
+				
+			ene = ene + abs(0.5*(f1*u1))
+			ene = ene + abs(0.5*(f2*u2))
+			ene = ene + abs(0.5*(f3*u3))
+			ene = ene + abs(0.5*(f4*u4))
+			ene = ene + abs(0.5*(f5*u5))
+			ene = ene + abs(0.5*(f6*u6))
+		
+			el = ELNEXT(el)
+		*enddo
+
+		sene_comp = sene_cont + ene
+		outVars(i,7+j) = sene_comp/SENE_all
+		sene_comps = sene_comps + sene_comp
+    *enddo
+    outVars(i,7+nCMs+1) = sene_comps/SENE_all
+*ENDDO
+
+! change middle field multiplier to nCMs (manual)
+/NOPR
+/output,%_wb_userfiles_dir(1)%%f_name%_date%date%, txt,,APPEND,
+*mwrite,outVars,,,,jik,
+((e10.3',')6(f10.5',')9(e14.3',')e10.3)
+!_____________________^ update this int to nCMs
+/output
+/GOPR
+
+
+allsel
+finish
+/post26
