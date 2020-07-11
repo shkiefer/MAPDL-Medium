@@ -66,8 +66,7 @@ hdr(1)=STRFILL(hdr(1),col_str(1),ls+1)
 *do,i,1,nSets
 	set,,,,,,,i
 
-	*get,freq, ACTIVE, 0, SET, FREQ
-	!*get,freq,MODE,i,,,,,
+	*get,freq,MODE,i,FREQ
 	*get,effm_tx,MODE,i,EFFM,,DIREC,X
 	*get,effm_ty,MODE,i,EFFM,,DIREC,Y
 	*get,effm_tz,MODE,i,EFFM,,DIREC,Z
